@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>VIP SHOP</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+<h2>VIP SHOP</h2>
+<a href="/login">Đăng nhập</a>
+<a href="/register">Đăng ký</a>
+<a href="/logout">Thoát</a>
+</header>
+
+<div class="products">
+  <div class="card">
+    <h3>Áo Hoodie</h3>
+    <p>290.000đ</p>
+    <button onclick="add(290000)">Thêm</button>
+  </div>
+
+  <div class="card">
+    <h3>Giày Sneaker</h3>
+    <p>650.000đ</p>
+    <button onclick="add(650000)">Thêm</button>
+  </div>
+</div>
+
+<div class="cart">
+<h3>Giỏ hàng</h3>
+<p>Tổng: <span id="total">0</span> đ</p>
+
+<form action="/checkout" method="post">
+  <input type="hidden" name="total" id="totalInput">
+  <button type="submit">Thanh toán</button>
+</form>
+</div>
+
+<script>
+let total = 0;
+function add(price){
+  total += price;
+  document.getElementById("total").innerText = total.toLocaleString();
+  document.getElementById("totalInput").value = total;
+}
+</script>
+
+</body>
+</html>
