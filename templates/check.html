@@ -1,90 +1,225 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Kiểm Tra KEY</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIP Shop</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
 
-        .box {
-            background: #111827;
-            border-radius: 16px;
-            padding: 24px;
-            width: 90%;
-            max-width: 420px;
-            box-shadow: 0 0 25px rgba(0,0,0,0.6);
-        }
+<style>
+body{
+    font-family:Poppins, sans-serif;
+    margin:0;
+    background:#f5f6fa;
+}
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+header{
+    background:linear-gradient(45deg,#111,#333);
+    color:white;
+    padding:15px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
 
-        .valid {
-            color: #00ff88;
-        }
+header h1{margin:0;font-size:22px;}
 
-        .invalid {
-            color: #ff4d4d;
-        }
+.cart-btn{
+    background:#ff4757;
+    border:none;
+    color:white;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+}
 
-        .item {
-            background: #1f2937;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-        }
+.products{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:20px;
+    padding:20px;
+}
 
-        .label {
-            font-size: 13px;
-            color: #9ca3af;
-        }
+.product{
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    text-align:center;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    transition:.3s;
+}
 
-        .value {
-            font-size: 16px;
-            margin-top: 4px;
-        }
+.product:hover{
+    transform:translateY(-5px);
+}
 
-        .status {
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-    </style>
+.product img{
+    width:100%;
+    height:150px;
+    object-fit:cover;
+    border-radius:8px;
+}
+
+.price{
+    color:#ff4757;
+    font-weight:600;
+}
+
+button.add{
+    background:#2ed573;
+    border:none;
+    color:white;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-top:8px;
+}
+
+.cart{
+    position:fixed;
+    top:0;
+    right:-350px;
+    width:320px;
+    height:100%;
+    background:white;
+    box-shadow:-4px 0 10px rgba(0,0,0,0.1);
+    padding:20px;
+    transition:.4s;
+    overflow-y:auto;
+}
+
+.cart.active{ right:0; }
+
+.cart h2{margin-top:0;}
+
+.cart-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:10px 0;
+}
+
+.qty button{
+    padding:2px 6px;
+    margin:0 3px;
+}
+
+.total{
+    font-size:18px;
+    font-weight:600;
+    margin-top:15px;
+}
+
+.checkout{
+    width:100%;
+    background:#ff4757;
+    border:none;
+    color:white;
+    padding:10px;
+    border-radius:6px;
+    margin-top:10px;
+    cursor:pointer;
+}
+</style>
 </head>
 <body>
 
-<div class="box">
-    <h1>🔍 KIỂM TRA KEY</h1>
+<header>
+    <h1>🛒 VIP SHOP</h1>
+    <button class="cart-btn" onclick="toggleCart()">Giỏ hàng (<span id="count">0</span>)</button>
+</header>
 
-    <div class="status {{ 'valid' if status == 'valid' else 'invalid' }}">
-        {{ '✅ KEY HỢP LỆ' if status == 'valid' else '❌ KEY KHÔNG HỢP LỆ' }}
-    </div>
+<div class="products" id="products"></div>
 
-    <div class="item">
-        <div class="label">Thông báo</div>
-        <div class="value">{{ message }}</div>
-    </div>
-
-    {% if expire %}
-    <div class="item">
-        <div class="label">Hết hạn</div>
-        <div class="value">{{ expire }}</div>
-    </div>
-    {% endif %}
+<div class="cart" id="cart">
+    <h2>Giỏ hàng</h2>
+    <div id="cartItems"></div>
+    <div class="total">Tổng: <span id="total">0</span> đ</div>
+    <button class="checkout">Thanh toán</button>
 </div>
 
+<script>
+const products=[
+ {id:1,name:"Áo Hoodie",price:290000,img:"https://picsum.photos/300?1"},
+ {id:2,name:"Giày Sneaker",price:650000,img:"https://picsum.photos/300?2"},
+ {id:3,name:"Tai nghe Bluetooth",price:320000,img:"https://picsum.photos/300?3"},
+ {id:4,name:"Đồng hồ",price:540000,img:"https://picsum.photos/300?4"},
+ {id:5,name:"Túi thời trang",price:410000,img:"https://picsum.photos/300?5"}
+];
+
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+
+function saveCart(){
+ localStorage.setItem("cart",JSON.stringify(cart));
+}
+
+function renderProducts(){
+ const el=document.getElementById("products");
+ el.innerHTML="";
+ products.forEach(p=>{
+   el.innerHTML+=`
+   <div class="product">
+     <img src="${p.img}">
+     <h4>${p.name}</h4>
+     <div class="price">${p.price.toLocaleString()} đ</div>
+     <button class="add" onclick="add(${p.id})">Thêm vào giỏ</button>
+   </div>`;
+ });
+}
+
+function add(id){
+ const item=cart.find(i=>i.id===id);
+ if(item) item.qty++;
+ else cart.push({...products.find(p=>p.id===id),qty:1});
+ update();
+}
+
+function changeQty(id,delta){
+ const item=cart.find(i=>i.id===id);
+ item.qty+=delta;
+ if(item.qty<=0) cart=cart.filter(i=>i.id!==id);
+ update();
+}
+
+function update(){
+ saveCart();
+ renderCart();
+ document.getElementById("count").innerText=
+   cart.reduce((a,b)=>a+b.qty,0);
+}
+
+function renderCart(){
+ const el=document.getElementById("cartItems");
+ const totalEl=document.getElementById("total");
+ el.innerHTML="";
+ let total=0;
+
+ cart.forEach(item=>{
+   total+=item.price*item.qty;
+   el.innerHTML+=`
+   <div class="cart-item">
+     <div>
+       <div>${item.name}</div>
+       <small>${item.price.toLocaleString()} đ</small>
+     </div>
+     <div class="qty">
+       <button onclick="changeQty(${item.id},-1)">-</button>
+       ${item.qty}
+       <button onclick="changeQty(${item.id},1)">+</button>
+     </div>
+   </div>`;
+ });
+
+ totalEl.innerText=total.toLocaleString();
+}
+
+function toggleCart(){
+ document.getElementById("cart").classList.toggle("active");
+}
+
+renderProducts();
+update();
+</script>
 </body>
 </html>
